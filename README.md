@@ -33,6 +33,45 @@ Just input your this month electricity bill data and fill all the details in the
   <img src="assets/Screenshot_20250628_170301.png" width="300"/>
 </p>
 
+# Development Readme
+
+
+### Prerequisites
+
+1.  [Git](https://git-scm.com/downloads).
+2.  [Node & npm](https://nodejs.org/en/download/) _(version 18 or greater)_.
+3.  [nvm](https://dev.to/skaytech/how-to-install-node-version-manager-nvm-for-windows-10-4nbi).
+4.  Clone of the repo.
+
+## Installation of the Project
+
+1. Clone the project by -  `git clone https://github.com/yamiamit/ElectroBill`.
+
+## Running the Project
+
+### Steps to run backend
+
+In order to install all packages follow the steps below:
+
+ 1. Move to <b> server </b> folder
+ 2. To make sure you have the required npm version run -  `nvm use 18`
+ 3. If you don't have the desired version of node install it by -  `nvm install 18` and then run -  `nvm use 18`
+ 4. Then to install all the required packages run -  `npm install`
+ 5. Then run -  `node index.js`
+ 6. Your server should start!
+
+ > The server will be served on **http://localhost:8080/**
+
+### Steps To Set Up Frontend
+ 
+ #### user side
+ 1. Move to <b> frontend </b>
+ 2. Open frontend in android studio/vs code.
+ 3. Run 'flutter pub get' to install necessary dependencies(MAake sure you have required plugins installed).
+ 4. Run 'flutter run' to start installing your app.
+ 
+
+
 
 
 
