@@ -1,4 +1,5 @@
 
+<<<<<<< Updated upstream
 buildscript{
     ext.kotlin_version = '1.7.10'
     repositories {
@@ -9,6 +10,14 @@ buildscript{
         classpath 'com.google.gms:google-services:4.4.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
+=======
+plugins {
+    // ...
+
+    // Add the dependency for the Google services Gradle plugin
+    id("com.google.gms.google-services") version "4.4.2" apply false
+
+>>>>>>> Stashed changes
 }
 
 
