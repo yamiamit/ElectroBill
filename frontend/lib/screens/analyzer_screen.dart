@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/screens/consumer_details.dart';
+import 'package:intl/intl.dart';
 
 class AnalyzeScreen extends StatefulWidget {
   @override
@@ -8,44 +10,70 @@ class AnalyzeScreen extends StatefulWidget {
 class _AnalyzeScreenState extends State<AnalyzeScreen> {
   final TextEditingController consumerIdController = TextEditingController();
   final TextEditingController billAmountController = TextEditingController();
-  final TextEditingController billDurationController = TextEditingController();
+
+  DateTime? startDate;
+  DateTime? endDate;
 
   String? selectedState;
   String? selectedPerUnit;
-  List<Map<String, TextEditingController>> consumptionList = [];
 
   final List<String> states = ['State A', 'State B', 'State C'];
   final List<String> perUnitOptions = ['INR/kWh', 'USD/kWh'];
 
-  @override
-  void initState() {
-    super.initState();
-    addConsumptionRow();
+  int getCalculatedMonths() {
+    if (startDate == null || endDate == null) return 0;
+    return (endDate!.year - startDate!.year) * 12 + endDate!.month - startDate!.month;
   }
 
-  void addConsumptionRow() {
-    setState(() {
-      consumptionList.add({
-        'equipment': TextEditingController(),
-        'power': TextEditingController(),
-        'avgUsage': TextEditingController(),
+  Future<void> pickDate(BuildContext context, bool isStart) async {
+    final initialDate = isStart ? (startDate ?? DateTime.now()) : (endDate ?? DateTime.now());
+    final newDate = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+
+    if (newDate != null) {
+      setState(() {
+        if (isStart) {
+          startDate = newDate;
+          if (endDate != null && endDate!.isBefore(startDate!)) endDate = null;
+        } else {
+          endDate = newDate;
+        }
       });
-    });
+    }
   }
 
-  void removeConsumptionRow(int index) {
-    setState(() {
-      consumptionList.removeAt(index);
-    });
-  }
+  void handleProceed() {
+    final consumerId = consumerIdController.text.trim();
+    final billAmount = double.tryParse(billAmountController.text.trim()) ?? 0;
+    final duration = getCalculatedMonths();
 
-  void handleSubmit() {
-    // Process submission logic here
-    print('Submit pressed');
+    if (consumerId.isEmpty || billAmount <= 0 || duration <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please complete all fields correctly')),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ConsumerDetailsScreen(
+          consumerId: consumerId,
+          billAmount: billAmount,
+          billDuration: duration,
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final dateFormat = DateFormat('yyyy-MM-dd');
+
     return Scaffold(
       appBar: AppBar(title: Text('Bill Analyzer')),
       body: SingleChildScrollView(
@@ -64,11 +92,26 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
             ),
 
             SizedBox(height: 10),
-            Text('Bill Duration (in months)'),
-            TextField(
-              controller: billDurationController,
-              keyboardType: TextInputType.number,
+            Text('Start Date'),
+            ListTile(
+              title: Text(startDate != null
+                  ? dateFormat.format(startDate!)
+                  : 'Select Start Date'),
+              trailing: Icon(Icons.calendar_today),
+              onTap: () => pickDate(context, true),
             ),
+
+            Text('End Date'),
+            ListTile(
+              title: Text(endDate != null
+                  ? dateFormat.format(endDate!)
+                  : 'Select End Date'),
+              trailing: Icon(Icons.calendar_today),
+              onTap: () => pickDate(context, false),
+            ),
+
+            SizedBox(height: 10),
+            Text('Duration (in months): ${getCalculatedMonths()}'),
 
             SizedBox(height: 10),
             Row(
@@ -93,67 +136,17 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
                         .map((unit) =>
                         DropdownMenuItem(value: unit, child: Text(unit)))
                         .toList(),
-                    onChanged: (value) =>
-                        setState(() => selectedPerUnit = value),
+                    onChanged: (value) => setState(() => selectedPerUnit = value),
                   ),
                 ),
               ],
             ),
 
-            Divider(height: 30),
-            Text('Consumption', style: TextStyle(fontSize: 16)),
-
-            Column(
-              children: List.generate(consumptionList.length, (index) {
-                final item = consumptionList[index];
-                return Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: item['equipment'],
-                        decoration: InputDecoration(labelText: 'Equipment'),
-                      ),
-                    ),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: TextField(
-                        controller: item['power'],
-                        decoration: InputDecoration(labelText: 'Power (W)'),
-                        keyboardType: TextInputType.number,
-                      ),
-                    ),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: TextField(
-                        controller: item['avgUsage'],
-                        decoration:
-                        InputDecoration(labelText: 'Avg. Usage (hrs/day)'),
-                        keyboardType: TextInputType.number,
-                      ),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.delete),
-                      onPressed: () => removeConsumptionRow(index),
-                    ),
-                  ],
-                );
-              }),
-            ),
-
-            Align(
-              alignment: Alignment.centerLeft,
-              child: ElevatedButton.icon(
-                icon: Icon(Icons.add),
-                label: Text('Add Row'),
-                onPressed: addConsumptionRow,
-              ),
-            ),
-
-            SizedBox(height: 20),
+            SizedBox(height: 30),
             Center(
               child: ElevatedButton(
-                onPressed: handleSubmit,
-                child: Text('Submit'),
+                onPressed: handleProceed,
+                child: Text('Proceed'),
               ),
             )
           ],
